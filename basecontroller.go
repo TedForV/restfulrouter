@@ -1,11 +1,11 @@
 package RestfulRouter
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"reflect"
 	"strings"
-	"errors"
-	"net/http"
 )
 
 const (
@@ -22,11 +22,10 @@ type IBaseController interface {
 	Options(c *gin.Context)
 
 	//
-	Mapping()(map[string]GinHandler)
+	Mapping() map[string]GinHandler
 }
 
-type BaseController struct{
-
+type BaseController struct {
 }
 
 func (t *BaseController) Get(c *gin.Context) {
@@ -58,40 +57,39 @@ func (t *BaseController) Options(c *gin.Context) {
 	return
 }
 
-func (t *BaseController) Mapping()(map[string]GinHandler) {
+func (t *BaseController) Mapping() map[string]GinHandler {
 	return nil
 }
 
-func returnNotResource(c *gin.Context){
-	c.String(http.StatusNotFound,"")
+func returnNotResource(c *gin.Context) {
+	c.String(http.StatusNotFound, "")
 }
 
-func analyseMappingKey(key string)(method string,pathName string,err error){
+func analyseMappingKey(key string) (method string, pathName string, err error) {
 	key = strings.TrimSpace(key)
 
-	if len(key) < 5{
-		return "","",errors.New("key has error.")
+	if len(key) < 5 {
+		return "", "", errors.New("key has error.")
 	}
 
-	if i := strings.Index(key,KEY_SEPERATOR); i == -1{
-		return  "","",errors.New("key needs a comma.")
-	} else{
+	if i := strings.Index(key, KEY_SEPERATOR); i == -1 {
+		return "", "", errors.New("key needs a comma.")
+	} else {
 		method = key[:i]
-		if err != nil{
-			return "","",errors.New("key has error.")
+		if err != nil {
+			return "", "", errors.New("key has error.")
 		}
 
 		pathName = strings.ToLower(strings.TrimSpace(key[i+1:]))
 	}
 
-	return method,pathName,nil
+	return method, pathName, nil
 }
 
 //method is http.MethodXXX
-func ComposeCustomMappingKey(method string,path string) string{
+func ComposeCustomMappingKey(method string, path string) string {
 	return method + KEY_SEPERATOR + path
 }
-
 
 type GinHandler func(c *gin.Context)
 
@@ -105,8 +103,8 @@ func RegisterAPIRoute(ginEngine *gin.Engine, controllers []IBaseController) {
 			panic(err)
 		}
 		autoMapping(ginEngine, cname, c)
-		err = autoCustomMapping(ginEngine,cname,c)
-		if err != nil{
+		err = autoCustomMapping(ginEngine, cname, c)
+		if err != nil {
 			panic(err)
 		}
 	}
@@ -157,59 +155,59 @@ func autoMapping(ginEngine *gin.Engine, controllerName string, controller IBaseC
 	})
 }
 
-func autoCustomMapping(ginEngine *gin.Engine,controllerName string,controller IBaseController) error{
-	 route := controller.Mapping()
+func autoCustomMapping(ginEngine *gin.Engine, controllerName string, controller IBaseController) error {
+	route := controller.Mapping()
 
-	 for k,v :=range route{
-	 	 method,path,err:= analyseMappingKey(k)
-	 	 if err != nil{
-	 	 	return  err
-		 }
-		 fullPath := "/"+controllerName + "/" + path
-		 switch method {
-		 case http.MethodGet:
-		 	func(handler GinHandler){
+	for k, v := range route {
+		method, path, err := analyseMappingKey(k)
+		if err != nil {
+			return err
+		}
+		fullPath := "/" + controllerName + "/" + path
+		switch method {
+		case http.MethodGet:
+			func(handler GinHandler) {
 				ginEngine.GET(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
-		 case http.MethodPost:
-		 	func(handler GinHandler){
-		 		ginEngine.POST(fullPath, func(c *gin.Context) {
+		case http.MethodPost:
+			func(handler GinHandler) {
+				ginEngine.POST(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
-		 case http.MethodPut:
-			 func(handler GinHandler){
-				 ginEngine.PUT(fullPath, func(c *gin.Context) {
-					 handler(c)
-				 })
-			 }(v)
-		 case http.MethodDelete:
-			 func(handler GinHandler){
-				 ginEngine.DELETE(fullPath, func(c *gin.Context) {
-					 handler(c)
-				 })
-			 }(v)
-		 case http.MethodHead:
-			 func(handler GinHandler){
-				 ginEngine.HEAD(fullPath, func(c *gin.Context) {
-					 handler(c)
-				 })
-			 }(v)
-		 case http.MethodOptions:
-			 func(handler GinHandler){
-				 ginEngine.OPTIONS(fullPath, func(c *gin.Context) {
-					 handler(c)
-				 })
-			 }(v)
-		 case http.MethodPatch:
-			 func(handler GinHandler){
-				 ginEngine.PATCH(fullPath, func(c *gin.Context) {
-					 handler(c)
-				 })
-			 }(v)
-		 }
-	 }
-	 return  nil
+		case http.MethodPut:
+			func(handler GinHandler) {
+				ginEngine.PUT(fullPath, func(c *gin.Context) {
+					handler(c)
+				})
+			}(v)
+		case http.MethodDelete:
+			func(handler GinHandler) {
+				ginEngine.DELETE(fullPath, func(c *gin.Context) {
+					handler(c)
+				})
+			}(v)
+		case http.MethodHead:
+			func(handler GinHandler) {
+				ginEngine.HEAD(fullPath, func(c *gin.Context) {
+					handler(c)
+				})
+			}(v)
+		case http.MethodOptions:
+			func(handler GinHandler) {
+				ginEngine.OPTIONS(fullPath, func(c *gin.Context) {
+					handler(c)
+				})
+			}(v)
+		case http.MethodPatch:
+			func(handler GinHandler) {
+				ginEngine.PATCH(fullPath, func(c *gin.Context) {
+					handler(c)
+				})
+			}(v)
+		}
+	}
+	return nil
 }
