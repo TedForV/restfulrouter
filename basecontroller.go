@@ -81,7 +81,7 @@ func analyseMappingKey(key string)(method string,pathName string,err error){
 			return "","",errors.New("key has error.")
 		}
 
-		pathName = key[i+1:]
+		pathName = strings.ToLower(strings.TrimSpace(key[i+1:]))
 	}
 
 	return method,pathName,nil
@@ -125,7 +125,7 @@ func getControllerValidName(controller IBaseController) (string, error) {
 	fullName = fullName[lastDotIndex+1:]
 	if strings.HasSuffix(fullName, CONTROLLER_SUFFIX) && len(fullName) > len(CONTROLLER_SUFFIX) {
 		validName := fullName[0 : len(fullName)-len(CONTROLLER_SUFFIX)]
-		return validName, nil
+		return strings.ToLower(strings.TrimSpace(validName)), nil
 	} else {
 		return "", errors.New(ERROR_CONTROLLER_NAME)
 	}
