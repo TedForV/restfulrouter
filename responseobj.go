@@ -1,6 +1,9 @@
 package RestfulRouter
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 type ResponseObj struct {
 	Code ResponseCode `json:"code"`
@@ -23,4 +26,20 @@ func GinResponseObj(o *ResponseObj) gin.H {
 		"msg":  o.Msg,
 		"data": o.Data,
 	}
+}
+
+func Error(c *gin.Context, err error, additionalInfo string) {
+	var msg string
+	if err != nil {
+		msg = err.Error() + ":" + additionalInfo
+	} else {
+		msg = additionalInfo
+	}
+
+	result := ResponseObj{
+		RERROR,
+		msg,
+		nil,
+	}
+	c.JSON(http.StatusInternalServerError, GinResponseObj(&result))
 }
