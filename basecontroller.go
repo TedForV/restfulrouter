@@ -94,6 +94,35 @@ func ComposeCustomMappingKey(method string, path string) string {
 type GinHandler func(c *gin.Context)
 
 func RegisterAPIRoute(ginEngine *gin.Engine, controllers []IBaseController) {
+	routesControllerMapping(ginEngine, controllers)
+	//if controllers == nil || len(controllers) == 0 {
+	//	return
+	//}
+	//for _, c := range controllers {
+	//	cname, err := getControllerValidName(c)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	autoMapping(ginEngine, cname, c)
+	//	err = autoCustomMapping(ginEngine, cname, c)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//}
+
+}
+
+func RegisterGroupAPIRoute(basePath string, ginEngine *gin.Engine, controllers []IBaseController) {
+	if !strings.HasPrefix(basePath, "/") {
+		basePath = "/" + basePath
+	}
+	g := ginEngine.Group(basePath)
+	{
+		routesControllerMapping(g, controllers)
+	}
+}
+
+func routesControllerMapping(router gin.IRouter, controllers []IBaseController) {
 	if controllers == nil || len(controllers) == 0 {
 		return
 	}
@@ -102,13 +131,12 @@ func RegisterAPIRoute(ginEngine *gin.Engine, controllers []IBaseController) {
 		if err != nil {
 			panic(err)
 		}
-		autoMapping(ginEngine, cname, c)
-		err = autoCustomMapping(ginEngine, cname, c)
+		autoMapping(router, cname, c)
+		err = autoCustomMapping(router, cname, c)
 		if err != nil {
 			panic(err)
 		}
 	}
-
 }
 
 const (
@@ -130,32 +158,32 @@ func getControllerValidName(controller IBaseController) (string, error) {
 
 }
 
-func autoMapping(ginEngine *gin.Engine, controllerName string, controller IBaseController) {
+func autoMapping(router gin.IRouter, controllerName string, controller IBaseController) {
 	path := "/" + controllerName
-	ginEngine.GET(path, func(c *gin.Context) {
+	router.GET(path, func(c *gin.Context) {
 		controller.Get(c)
 	})
-	ginEngine.POST(path, func(c *gin.Context) {
+	router.POST(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
-	ginEngine.PUT(path, func(c *gin.Context) {
+	router.PUT(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
-	ginEngine.DELETE(path, func(c *gin.Context) {
+	router.DELETE(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
-	ginEngine.HEAD(path, func(c *gin.Context) {
+	router.HEAD(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
-	ginEngine.OPTIONS(path, func(c *gin.Context) {
+	router.OPTIONS(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
-	ginEngine.PATCH(path, func(c *gin.Context) {
+	router.PATCH(path, func(c *gin.Context) {
 		controller.Post(c)
 	})
 }
 
-func autoCustomMapping(ginEngine *gin.Engine, controllerName string, controller IBaseController) error {
+func autoCustomMapping(router gin.IRouter, controllerName string, controller IBaseController) error {
 	route := controller.Mapping()
 
 	for k, v := range route {
@@ -167,43 +195,43 @@ func autoCustomMapping(ginEngine *gin.Engine, controllerName string, controller 
 		switch method {
 		case http.MethodGet:
 			func(handler GinHandler) {
-				ginEngine.GET(fullPath, func(c *gin.Context) {
+				router.GET(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodPost:
 			func(handler GinHandler) {
-				ginEngine.POST(fullPath, func(c *gin.Context) {
+				router.POST(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodPut:
 			func(handler GinHandler) {
-				ginEngine.PUT(fullPath, func(c *gin.Context) {
+				router.PUT(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodDelete:
 			func(handler GinHandler) {
-				ginEngine.DELETE(fullPath, func(c *gin.Context) {
+				router.DELETE(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodHead:
 			func(handler GinHandler) {
-				ginEngine.HEAD(fullPath, func(c *gin.Context) {
+				router.HEAD(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodOptions:
 			func(handler GinHandler) {
-				ginEngine.OPTIONS(fullPath, func(c *gin.Context) {
+				router.OPTIONS(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
 		case http.MethodPatch:
 			func(handler GinHandler) {
-				ginEngine.PATCH(fullPath, func(c *gin.Context) {
+				router.PATCH(fullPath, func(c *gin.Context) {
 					handler(c)
 				})
 			}(v)
