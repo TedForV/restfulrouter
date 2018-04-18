@@ -20,6 +20,7 @@ const (
 	ROTHER
 )
 
+// GinResponseObj convert ResponseObj into gin.H
 func GinResponseObj(o *ResponseObj) gin.H {
 	return gin.H{
 		"code": o.Code,
@@ -28,6 +29,7 @@ func GinResponseObj(o *ResponseObj) gin.H {
 	}
 }
 
+// Error response error message
 func Error(c *gin.Context, err error, additionalInfo string) {
 	var msg string
 	if err != nil {

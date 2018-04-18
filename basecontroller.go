@@ -12,19 +12,30 @@ const (
 	KEY_SEPERATOR = ":"
 )
 
+//A type that satisfies restfulrouter.IBaseController can be
+//auto mapping request to the certain method
 type IBaseController interface {
+	//Get is for the HttpGet route for the certain request
 	Get(c *gin.Context)
+	//Post is for the HttpPost route for the certain request
 	Post(c *gin.Context)
+	//Put is for the HttpPut route for the certain request
 	Put(c *gin.Context)
+	//Delete is for the HttpDelete route for the certain request
 	Delete(c *gin.Context)
+	//Patch is for the HttpPatch route for the certain request
 	Patch(c *gin.Context)
+	//Head is for the HttpHead route for the certain request
 	Head(c *gin.Context)
+	//Options is for the HttpOptions route for the certain request
 	Options(c *gin.Context)
 
-	//
+	//Mapping is the method that mapping custom request to certain method
 	Mapping() map[string]GinHandler
 }
 
+//BaseController implement  IBaseController,
+// cover the base functions with 404 response
 type BaseController struct {
 }
 
@@ -61,10 +72,14 @@ func (t *BaseController) Mapping() map[string]GinHandler {
 	return nil
 }
 
+// returnNotResource response 404 to the client
 func returnNotResource(c *gin.Context) {
 	c.String(http.StatusNotFound, "")
 }
 
+// analyseMappingKey, which used in custom mapping logic, seperate the key into http method value
+// and path value. The seperator is semicolon, the seperate pattern is 'httpmethod:pathname'.
+// method only use the first semicolon to seperate string.
 func analyseMappingKey(key string) (method string, pathName string, err error) {
 	key = strings.TrimSpace(key)
 
@@ -86,17 +101,21 @@ func analyseMappingKey(key string) (method string, pathName string, err error) {
 	return method, pathName, nil
 }
 
-//method is http.MethodXXX
+// ComposeCustomMappingKey, which used in custom mapping logic, join the http method and the path into a string.
+// method is http.MethodXXX which defined in http package
 func ComposeCustomMappingKey(method string, path string) string {
 	return method + KEY_SEPERATOR + path
 }
 
 type GinHandler func(c *gin.Context)
 
+// RegisterAPIRoute is the main function.use this func can auto register the method to the certain request url
 func RegisterAPIRoute(ginEngine *gin.Engine, controllers []IBaseController) {
 	routesControllerMapping(ginEngine, controllers)
 }
 
+// RegisterGroupAPIRoute as RegisterAPIRout, the only difference between them is group method can
+// has pre base url
 func RegisterGroupAPIRoute(basePath string, ginEngine *gin.Engine, controllers []IBaseController) {
 	if !strings.HasPrefix(basePath, "/") {
 		basePath = "/" + basePath
