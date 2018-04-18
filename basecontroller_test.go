@@ -55,3 +55,7 @@ func CustomMethodTest(c *gin.Context) {
 func TestRegisterAPIRoute(t *testing.T) {
 	RegisterAPIRoute(gin.Default(), []IBaseController{&TestController{}})
 }
+
+func TestRegisterGroupAPIRoute(t *testing.T) {
+	RegisterGroupAPIRoute("/test", gin.Default(), []IBaseController{&TestController{}})
+}

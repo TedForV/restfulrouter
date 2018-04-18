@@ -95,21 +95,6 @@ type GinHandler func(c *gin.Context)
 
 func RegisterAPIRoute(ginEngine *gin.Engine, controllers []IBaseController) {
 	routesControllerMapping(ginEngine, controllers)
-	//if controllers == nil || len(controllers) == 0 {
-	//	return
-	//}
-	//for _, c := range controllers {
-	//	cname, err := getControllerValidName(c)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//	autoMapping(ginEngine, cname, c)
-	//	err = autoCustomMapping(ginEngine, cname, c)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//}
-
 }
 
 func RegisterGroupAPIRoute(basePath string, ginEngine *gin.Engine, controllers []IBaseController) {
