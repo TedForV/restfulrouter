@@ -1,4 +1,4 @@
-package RestfulRouter
+package restfulrouter
 
 import (
 	"github.com/gin-gonic/gin"

@@ -1,4 +1,4 @@
-package RestfulRouter
+package restfulrouter
 
 import (
 	"errors"
