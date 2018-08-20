@@ -2,17 +2,19 @@ package restfulrouter
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
-	KEY_SEPERATOR = ":"
+	// KeySeperator seperator for keys
+	KeySeperator = ":"
 )
 
-//A type that satisfies restfulrouter.IBaseController can be
+// IBaseController that satisfies restfulrouter.IBaseController can be
 //auto mapping request to the certain method
 type IBaseController interface {
 	//Get is for the HttpGet route for the certain request
@@ -39,35 +41,49 @@ type IBaseController interface {
 type BaseController struct {
 }
 
+// Get default method
 func (t *BaseController) Get(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Post default method
 func (t *BaseController) Post(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Put default method
 func (t *BaseController) Put(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Delete default method
 func (t *BaseController) Delete(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Patch default method
 func (t *BaseController) Patch(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Head default method
 func (t *BaseController) Head(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
+
+// Options default method
 func (t *BaseController) Options(c *gin.Context) {
 	returnNotResource(c)
 	return
 }
 
+// Mapping default method
 func (t *BaseController) Mapping() map[string]GinHandler {
 	return nil
 }
@@ -84,15 +100,15 @@ func analyseMappingKey(key string) (method string, pathName string, err error) {
 	key = strings.TrimSpace(key)
 
 	if len(key) < 5 {
-		return "", "", errors.New("key has error.")
+		return "", "", errors.New("key has error")
 	}
 
-	if i := strings.Index(key, KEY_SEPERATOR); i == -1 {
-		return "", "", errors.New("key needs a comma.")
+	if i := strings.Index(key, KeySeperator); i == -1 {
+		return "", "", errors.New("key needs a comma")
 	} else {
 		method = key[:i]
 		if err != nil {
-			return "", "", errors.New("key has error.")
+			return "", "", errors.New("key has error")
 		}
 
 		pathName = strings.ToLower(strings.TrimSpace(key[i+1:]))
@@ -101,12 +117,13 @@ func analyseMappingKey(key string) (method string, pathName string, err error) {
 	return method, pathName, nil
 }
 
-// ComposeCustomMappingKey, which used in custom mapping logic, join the http method and the path into a string.
+// ComposeCustomMappingKey  which used in custom mapping logic, join the http method and the path into a string.
 // method is http.MethodXXX which defined in http package
 func ComposeCustomMappingKey(method string, path string) string {
-	return method + KEY_SEPERATOR + path
+	return method + KeySeperator + path
 }
 
+// GinHandler define a func for gin
 type GinHandler func(c *gin.Context)
 
 // RegisterAPIRoute is the main function.use this func can auto register the method to the certain request url
@@ -144,8 +161,11 @@ func routesControllerMapping(router gin.IRouter, controllers []IBaseController) 
 }
 
 const (
-	CONTROLLER_SUFFIX     = "Controller"
-	ERROR_CONTROLLER_NAME = "Controller name must be suffix with 'Controller'"
+	// ControllerSuffix defin the suffix of controller struct
+	ControllerSuffix = "Controller"
+
+	// ErrorControllerName is a message of controller wrong name
+	ErrorControllerName = "Controller name must be suffix with 'Controller'"
 )
 
 func getControllerValidName(controller IBaseController) (string, error) {
@@ -153,12 +173,11 @@ func getControllerValidName(controller IBaseController) (string, error) {
 	fullName := typeInfo.Elem().String()
 	lastDotIndex := strings.LastIndex(fullName, ".")
 	fullName = fullName[lastDotIndex+1:]
-	if strings.HasSuffix(fullName, CONTROLLER_SUFFIX) && len(fullName) > len(CONTROLLER_SUFFIX) {
-		validName := fullName[0 : len(fullName)-len(CONTROLLER_SUFFIX)]
+	if strings.HasSuffix(fullName, ControllerSuffix) && len(fullName) > len(ControllerSuffix) {
+		validName := fullName[0 : len(fullName)-len(ControllerSuffix)]
 		return strings.ToLower(strings.TrimSpace(validName)), nil
-	} else {
-		return "", errors.New(ERROR_CONTROLLER_NAME)
 	}
+	return "", errors.New(ErrorControllerName)
 
 }
 

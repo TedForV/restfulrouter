@@ -1,23 +1,29 @@
 package restfulrouter
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
+// ResponseObj define  a response object
 type ResponseObj struct {
 	Code ResponseCode `json:"code"`
 	Msg  string       `json:"msg"`
 	Data interface{}  `json:"data"`
 }
 
+// ResponseCode define the new type for response code
 type ResponseCode int8
 
 const (
 	_ ResponseCode = iota
-	RSUCCESS
-	RERROR
-	ROTHER
+	// RSuccess is success status
+	RSuccess
+	// RError is error status
+	RError
+	// ROther is other status
+	ROther
 )
 
 // GinResponseObj convert ResponseObj into gin.H
@@ -39,7 +45,7 @@ func Error(c *gin.Context, err error, additionalInfo string) {
 	}
 
 	result := ResponseObj{
-		RERROR,
+		RError,
 		msg,
 		nil,
 	}
