@@ -1,4 +1,4 @@
-module restfulrouter
+module github.com/tedforv/restfulrouter
 
 go 1.13
 
